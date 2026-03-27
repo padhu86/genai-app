@@ -2,3 +2,5 @@ fastapi
 uvicorn[standard]
 gunicorn
 jinja2
+openai
+azure-identity
