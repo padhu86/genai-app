@@ -1,12 +1,24 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from openai import AzureOpenAI
+from azure.identity import DefaultAzureCredential
 import os
 
 app = FastAPI()
 
+# Template setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+
+# Managed Identity setup
+credential = DefaultAzureCredential()
+
+client = AzureOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_version="2024-02-15-preview",
+    azure_ad_token_provider=credential
+)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -18,3 +30,14 @@ async def chat(req: Request):
     user_query = body["message"]
 
     return {"response": f"You said: {user_query}"}
+
+@app.get("/test-openai")
+async def test_openai():
+    response = client.chat.completions.create(
+        model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        messages=[
+            {"role": "user", "content": "Say hello"}
+        ]
+    )
+
+    return {"response": response.choices[0].message.content}
