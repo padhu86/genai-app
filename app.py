@@ -5,9 +5,10 @@ import os
 
 app = FastAPI()
 
-# Fix for Azure path issue
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
