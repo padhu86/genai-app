@@ -17,4 +17,4 @@ async def chat(req: Request):
     body = await req.json()
     user_query = body["message"]
 
-    return {"response": f"You said: {user_query}"}}"
+    return {"response": f"You said: {user_query}"}
