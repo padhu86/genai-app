@@ -12,12 +12,19 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 # Managed Identity setup
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+
 credential = DefaultAzureCredential()
+
+token_provider = get_bearer_token_provider(
+    credential,
+    "https://cognitiveservices.azure.com/.default"
+)
 
 client = AzureOpenAI(
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
     api_version="2024-02-15-preview",
-    azure_ad_token_provider=credential
+    azure_ad_token_provider=token_provider
 )
 
 @app.get("/", response_class=HTMLResponse)
