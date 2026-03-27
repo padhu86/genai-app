@@ -40,11 +40,22 @@ async def chat(req: Request):
 
 @app.get("/test-openai")
 async def test_openai():
-    response = client.chat.completions.create(
-        model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-        messages=[
-            {"role": "user", "content": "Say hello"}
-        ]
-    )
+    try:
+        print("Endpoint:", os.getenv("AZURE_OPENAI_ENDPOINT"))
+        print("Deployment:", os.getenv("AZURE_OPENAI_DEPLOYMENT"))
 
-    return {"response": response.choices[0].message.content}
+        response = client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+            messages=[
+                {"role": "user", "content": "Say hello"}
+            ]
+        )
+
+        return {"response": response.choices[0].message.content}
+
+    except Exception as e:
+        import traceback
+        return {
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }
