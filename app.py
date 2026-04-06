@@ -27,7 +27,7 @@ async def chat(req: Request):
         APIM_ENDPOINT,
         headers={
             "Content-Type": "application/json",
-            "Ocp-Apim-Subscription-Key": APIM_KEY
+            "Ocp-Apim-Subscription-Key": os.getenv("APIM_SUBSCRIPTION_KEY")
         },
         json={
             "messages": [
@@ -38,6 +38,13 @@ async def chat(req: Request):
     )
 
     data = response.json()
+
+    # 🔍 Important debug handling
+    if "choices" not in data:
+        return {
+            "error": "APIM response issue",
+            "full_response": data
+        }
 
     return {
         "response": data["choices"][0]["message"]["content"]
