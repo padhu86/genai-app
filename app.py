@@ -33,19 +33,20 @@ async def chat(req: Request):
         }
 
     try:
-        response = requests.post(
-            APIM_ENDPOINT,
-            headers={
-                "Content-Type": "application/json",
-                "api-key": APIM_KEY   # ✅ FIXED HERE
-            },
-            json={
-                "messages": [
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": user_query}
-                ]
-            }
-        )
+        
+response = requests.post(
+    APIM_ENDPOINT + f"&subscription-key={APIM_KEY}",   # ✅ FIX HERE
+    headers={
+        "Content-Type": "application/json",
+        "api-key": APIM_KEY
+    },
+    json={
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": user_query}
+        ]
+    }
+)
 
         data = response.json()
 
