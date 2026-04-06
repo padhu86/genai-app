@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from openai import AzureOpenAI
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 import os
+import requests
 
 app = FastAPI()
 
@@ -11,19 +10,9 @@ app = FastAPI()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
-# Managed Identity setup
-credential = DefaultAzureCredential()
-
-token_provider = get_bearer_token_provider(
-    credential,
-    "https://cognitiveservices.azure.com/.default"
-)
-
-client = AzureOpenAI(
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_version="2024-02-15-preview",
-    azure_ad_token_provider=token_provider
-)
+# APIM details
+APIM_ENDPOINT = "https://apim-dev-southindia-01.azure-api.net/dev/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview"
+APIM_KEY = os.getenv("APIM_SUBSCRIPTION_KEY")  # better to store in env
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -34,27 +23,43 @@ async def chat(req: Request):
     body = await req.json()
     user_query = body["message"]
 
-    response = client.chat.completions.create(
-        model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": user_query}
-        ]
+    response = requests.post(
+        APIM_ENDPOINT,
+        headers={
+            "Content-Type": "application/json",
+            "Ocp-Apim-Subscription-Key": APIM_KEY
+        },
+        json={
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": user_query}
+            ]
+        }
     )
 
-    return {"response": response.choices[0].message.content}
+    data = response.json()
 
-@app.get("/test-openai")
-async def test_openai():
+    return {
+        "response": data["choices"][0]["message"]["content"]
+    }
+
+@app.get("/test-apim")
+async def test_apim():
     try:
-        response = client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-            messages=[
-                {"role": "user", "content": "Say hello"}
-            ]
+        response = requests.post(
+            APIM_ENDPOINT,
+            headers={
+                "Content-Type": "application/json",
+                "Ocp-Apim-Subscription-Key": APIM_KEY
+            },
+            json={
+                "messages": [
+                    {"role": "user", "content": "Say hello"}
+                ]
+            }
         )
 
-        return {"response": response.choices[0].message.content}
+        return response.json()
 
     except Exception as e:
         import traceback
