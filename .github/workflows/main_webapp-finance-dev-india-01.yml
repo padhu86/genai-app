@@ -63,4 +63,4 @@ jobs:
         with:
           app-name: 'webapp-finance-dev-India-01'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D9AA58526A6F49E39473AFA40FE2F1A1 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69A4AAFB8D384DF7A0198F4675C71BAB }}
