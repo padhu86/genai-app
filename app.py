@@ -24,6 +24,9 @@ async def chat(req: Request):
     body = await req.json()
     user_query = body.get("message")
 
+    if not user_query:
+        return {"response": "Please enter a question"}
+
     # 🔥 Get key at runtime
     APIM_KEY = os.getenv("APIM_SUBSCRIPTION_KEY")
 
@@ -34,32 +37,34 @@ async def chat(req: Request):
 
     try:
         response = requests.post(
-            APIM_ENDPOINT,
+            APIM_ENDPOINT + f"&subscription-key={APIM_KEY}",   # ✅ Query param
             headers={
                 "Content-Type": "application/json",
-                "api-key": APIM_KEY   # ✅ FIXED HERE
+                "api-key": APIM_KEY   # ✅ Header
             },
             json={
                 "messages": [
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": user_query}
                 ]
-            }
+            },
+            timeout=30
         )
 
         data = response.json()
 
+        # ✅ Success case
         if "choices" in data:
             return {
                 "response": data["choices"][0]["message"]["content"]
             }
 
+        # ❌ Error case
         return {
-            "response": f"Error from backend: {data}"
+            "response": f"APIM Error ({response.status_code}): {data}"
         }
 
     except Exception as e:
-        import traceback
         return {
             "response": f"Exception occurred: {str(e)}"
         }
