@@ -13,10 +13,6 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 # APIM details
 APIM_ENDPOINT = "https://apim-dev-southindia-01.azure-api.net/dev/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview"
 
-# Log warning if key missing (do not crash app)
-if not APIM_KEY:
-    print("WARNING: APIM_SUBSCRIPTION_KEY is not set")
-
 # Home page
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
