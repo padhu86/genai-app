@@ -37,7 +37,7 @@ async def chat(req: Request):
             APIM_ENDPOINT,
             headers={
                 "Content-Type": "application/json",
-                "Ocp-Apim-Subscription-Key": APIM_KEY
+                "api-key": APIM_KEY   # ✅ FIXED HERE
             },
             json={
                 "messages": [
