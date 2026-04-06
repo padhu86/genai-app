@@ -12,7 +12,6 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 # APIM details
 APIM_ENDPOINT = "https://apim-dev-southindia-01.azure-api.net/dev/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview"
-APIM_KEY = os.getenv("APIM_SUBSCRIPTION_KEY")
 
 # Log warning if key missing (do not crash app)
 if not APIM_KEY:
@@ -29,7 +28,9 @@ async def chat(req: Request):
     body = await req.json()
     user_query = body.get("message")
 
-    # Handle missing key
+    # 🔥 Get key at runtime
+    APIM_KEY = os.getenv("APIM_SUBSCRIPTION_KEY")
+
     if not APIM_KEY:
         return {
             "response": "Configuration error: APIM key missing"
@@ -52,13 +53,11 @@ async def chat(req: Request):
 
         data = response.json()
 
-        # ✅ SUCCESS CASE
         if "choices" in data:
             return {
                 "response": data["choices"][0]["message"]["content"]
             }
 
-        # ❌ ERROR CASE (APIM/OpenAI error)
         return {
             "response": f"Error from backend: {data}"
         }
@@ -66,13 +65,14 @@ async def chat(req: Request):
     except Exception as e:
         import traceback
         return {
-            "response": f"Exception occurred: {str(e)}",
-            "trace": traceback.format_exc()
+            "response": f"Exception occurred: {str(e)}"
         }
 
 # Test APIM endpoint
 @app.get("/test-apim")
 async def test_apim():
+    APIM_KEY = os.getenv("APIM_SUBSCRIPTION_KEY")
+
     return {
         "key_present": APIM_KEY is not None,
         "key_preview": APIM_KEY[:5] if APIM_KEY else None
